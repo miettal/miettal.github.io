@@ -55,6 +55,9 @@ window.onload = async function(){
     var hoshinogen = document.getElementById('hoshinogen');
     const hoshinogen_canvas = document.getElementById('hoshinogen-canvas');
     const hoshinogen_ctx = hoshinogen_canvas.getContext('2d');
+    hoshinogen.addEventListener('loadeddata', function() {
+        frame();
+    }, false);
 
     // fusion
     const fusion_canvas = document.getElementById('fusion');
@@ -129,7 +132,6 @@ window.onload = async function(){
 //    hoshinogen.onloadeddata = function(event){
 //        frame();
 //    };
-    frame();
 };
 
 function drawWristPoint(wrist,ctx){
