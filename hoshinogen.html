@@ -65,12 +65,15 @@ window.onload = async function(){
 
     var flag = true;
     var net = await posenet.load();
-    you.play();
-    hoshinogen.play();
-    hoshinogen.loop = true;
-    $("#loading").empty()
 
     async function frame(){
+        if(flag === true){
+            you.play();
+            hoshinogen.play();
+            hoshinogen.loop = true;
+            $("#loading").empty()
+            flag = false;
+        }
         var pose;
 
         // hoshinogen
