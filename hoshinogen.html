@@ -3,6 +3,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <title>星野源の上半身と自分の下半身を合成するやつ</title>
     </head>
     <body>
         <h1>星野源の上半身と自分の下半身を合成するやつ</h1>
@@ -49,6 +50,8 @@ window.onload = async function(){
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({'audio': false, 'video': true});
         you.srcObject = stream;
+    }else{
+        alert('カメラつないで許可して');
     }
 
     // hoshinogen
