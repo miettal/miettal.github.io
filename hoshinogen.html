@@ -47,6 +47,8 @@ window.onload = async function(){
     const you = document.getElementById('you');
     const you_canvas = document.getElementById('you-canvas');
     const you_ctx = you_canvas.getContext('2d');
+    console.log(navigator.mediaDevices);
+    console.log(navigator.mediaDevices.getUserMedia);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({'audio': false, 'video': true});
         you.srcObject = stream;
