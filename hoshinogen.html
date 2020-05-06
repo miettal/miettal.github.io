@@ -1,0 +1,142 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    </head>
+    <body>
+        <h1>星野源の上半身と自分の下半身を合成するやつ</h1>
+        <div id="loading">
+            <h2>
+            読込中
+            </h2>
+        </div>
+        <div>
+            説明:</br>
+                - 星野源の動画とWebカメラの動画からpose detectionして、肩が同じ場所に来るように上半身下半身合成をしています。</a>
+                - 両肩肩の平均高さと肩幅をあわせる簡単な計算しかしていないので、回転に弱いです。</a>
+                - pose detectionは<a href="https://github.com/tensorflow/tfjs-models/tree/master/posenet">posenet</a>を使っています。</a>
+                - 星野源, Webカメラ両方とも左右反転して合成してあります。</a>
+        <div>
+            fusion:
+            <div>
+                <canvas id="fusion" width="864" height="1080"></canvas>
+            </div>
+        </div>
+        <div>
+            you:
+            <div>
+                <video id="you" width="600" height="500"></video>
+                <canvas id="you-canvas" width="600" height="500"></canvas>
+            </div>
+        </div>
+        <div>
+            hoshinogen:
+            <div>
+            <video id="hoshinogen" width="864" height="1080" controls>
+                <source src="./hoshinogen.mp4" type="video/mp4" />
+            </video>
+            <canvas id="hoshinogen-canvas" width="864" height="1080"></canvas>
+            </div>
+        </div>
+<script>
+window.onload = async function(){
+    // you
+    const you = document.getElementById('you');
+    const you_canvas = document.getElementById('you-canvas');
+    const you_ctx = you_canvas.getContext('2d');
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({'audio': false, 'video': true});
+        you.srcObject = stream;
+    }
+
+    // hoshinogen
+    var hoshinogen = document.getElementById('hoshinogen');
+    const hoshinogen_canvas = document.getElementById('hoshinogen-canvas');
+    const hoshinogen_ctx = hoshinogen_canvas.getContext('2d');
+
+    // fusion
+    const fusion_canvas = document.getElementById('fusion');
+    const fusion_ctx = fusion_canvas.getContext('2d');
+
+    var flag = true;
+    var net = await posenet.load();
+    async function frame(){
+        var pose;
+
+        // hoshinogen
+        pose = await net.estimateSinglePose(hoshinogen, {
+            flipHorizontal: true
+        });
+        var hoshinogen_shoulder_center_y = (pose.keypoints[5].position.y + pose.keypoints[6].position.y)/2;
+        var hoshinogen_shoulder_center_x = (pose.keypoints[5].position.x + pose.keypoints[6].position.x)/2;
+        var hoshinogen_shoulder_width = pose.keypoints[5].position.x - pose.keypoints[6].position.x;
+        hoshinogen_ctx.clearRect(0, 0, 864, 1080);
+        hoshinogen_ctx.save();
+        hoshinogen_ctx.scale(-1, 1);
+        hoshinogen_ctx.translate(-864, 0);
+        hoshinogen_ctx.drawImage(hoshinogen,
+            0, 0, 864, 1080,
+            0, 0, 864, 1080,
+        );
+        hoshinogen_ctx.restore();
+        drawWristPoint(pose.keypoints[5], hoshinogen_ctx);
+        drawWristPoint(pose.keypoints[6], hoshinogen_ctx);
+
+        // you
+        pose = await net.estimateSinglePose(you, {
+            flipHorizontal: true
+        });
+        var you_shoulder_center_y = (pose.keypoints[5].position.y + pose.keypoints[6].position.y)/2;
+        var you_shoulder_center_x = (pose.keypoints[5].position.x + pose.keypoints[6].position.x)/2;
+        var you_shoulder_width = pose.keypoints[5].position.x - pose.keypoints[6].position.x;
+        you_ctx.clearRect(0, 0, 600, 500);
+        you_ctx.save();
+        you_ctx.scale(-1, 1);
+        you_ctx.translate(-600, 0);
+        you_ctx.drawImage(you,
+            0, 0, 600, 500,
+            0, 0, 600, 500,
+        );
+        you_ctx.restore();
+        drawWristPoint(pose.keypoints[5], you_ctx);
+        drawWristPoint(pose.keypoints[6], you_ctx);
+
+        if(flag === true){
+            you.play();
+            hoshinogen.play();
+            hoshinogen.loop = true;
+            $("#loading").empty()
+
+            flag = false;
+        }
+
+        // fusion
+        fusion_ctx.clearRect(0, 0, 864, 1080);
+        fusion_ctx.save();
+        fusion_ctx.scale(-1, 1);
+        fusion_ctx.translate(-864, 0);
+        fusion_ctx.drawImage(hoshinogen,
+            0, 0, 864, hoshinogen_shoulder_center_y,
+            0, 0, 864, hoshinogen_shoulder_center_y,
+        );
+        fusion_ctx.drawImage(you,
+            0, you_shoulder_center_y, 600, 500 - you_shoulder_center_y,
+            (hoshinogen_shoulder_center_x - 250) - (600 - you_shoulder_center_x) * (hoshinogen_shoulder_width/you_shoulder_width), hoshinogen_shoulder_center_y, 600*(hoshinogen_shoulder_width/you_shoulder_width), 500*(hoshinogen_shoulder_width/you_shoulder_width) - hoshinogen_shoulder_center_y,
+        );
+        fusion_ctx.restore();
+
+        requestAnimationFrame(frame);
+    }
+    frame();
+};
+
+function drawWristPoint(wrist,ctx){
+        ctx.beginPath();
+        ctx.arc(wrist.position.x , wrist.position.y, 3, 0, 2 * Math.PI);
+        ctx.fillStyle = "pink";
+        ctx.fill();
+}
+</script>
+    </body>
+</html>
