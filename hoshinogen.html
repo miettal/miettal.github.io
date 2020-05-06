@@ -129,7 +129,11 @@ window.onload = async function(){
 
         requestAnimationFrame(frame);
     }
-    frame();
+
+    hoshinogen.onloadeddata = function(event){
+        frame();
+    };
+    hoshinogen.loadeddata(
 };
 
 function drawWristPoint(wrist,ctx){
