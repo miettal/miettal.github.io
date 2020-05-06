@@ -62,6 +62,11 @@ window.onload = async function(){
 
     var flag = true;
     var net = await posenet.load();
+    you.play();
+    hoshinogen.play();
+    hoshinogen.loop = true;
+    $("#loading").empty()
+
     async function frame(){
         var pose;
 
@@ -102,15 +107,6 @@ window.onload = async function(){
         you_ctx.restore();
         drawWristPoint(pose.keypoints[5], you_ctx);
         drawWristPoint(pose.keypoints[6], you_ctx);
-
-        if(flag === true){
-            you.play();
-            hoshinogen.play();
-            hoshinogen.loop = true;
-            $("#loading").empty()
-
-            flag = false;
-        }
 
         // fusion
         fusion_ctx.clearRect(0, 0, 864, 1080);
