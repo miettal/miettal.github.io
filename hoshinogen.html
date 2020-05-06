@@ -42,7 +42,7 @@
             </div>
         </div>
 <script>
-window.onload = async function(){
+$(async function(){
     // you
     const you = document.getElementById('you');
     const you_canvas = document.getElementById('you-canvas');
@@ -139,7 +139,7 @@ window.onload = async function(){
         frame();
     }, false);
     hoshinogen.load();
-};
+});
 
 function drawWristPoint(wrist,ctx){
         ctx.beginPath();
